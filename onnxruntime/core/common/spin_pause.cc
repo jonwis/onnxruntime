@@ -3,7 +3,7 @@
 
 #include "core/common/spin_pause.h"
 
-#if defined(_M_AMD64)
+#if defined(_M_AMD64) || defined(_M_ARM64EC) || defined(_M_ARM64)
 #include <intrin.h>
 #endif
 
@@ -42,6 +42,8 @@ void SpinPause() {
   } else {
     _mm_pause();
   }
+#elif defined(_WIN32) && (defined(_M_ARM64EC) || defined(_M_ARM64))
+  __yield();
 #endif
 }
 
