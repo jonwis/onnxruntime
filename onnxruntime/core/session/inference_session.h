@@ -970,7 +970,7 @@ class InferenceSession {
   // In case if the session is started with an input byte array contains model data, and the caller
   // specifies that ORT should use the model bytes directly by setting the session config option
   // "session.use_ort_model_bytes_directly" to "1", this will be empty
-  std::vector<uint8_t> ort_format_model_bytes_data_holder_;
+  Env::MappedMemoryPtr ort_format_model_bytes_data_holder_;
 
   bool using_ort_model_bytes_for_initializers_{false};
 

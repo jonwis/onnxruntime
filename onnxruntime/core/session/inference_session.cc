@@ -1522,22 +1522,13 @@ common::Status InferenceSession::TransformGraph(onnxruntime::Graph& graph, bool 
 
 static Status LoadOrtModelBytes(const PathString& model_uri,
                                 gsl::span<const uint8_t>& bytes,
-                                std::vector<uint8_t>& bytes_data_holder) {
+                                Env::MappedMemoryPtr& mapped_memory) {
   size_t num_bytes = 0;
   ORT_RETURN_IF_ERROR(Env::Default().GetFileLength(model_uri.c_str(), num_bytes));
 
-  bytes_data_holder.resize(num_bytes);
+  ORT_RETURN_IF_ERROR(Env::Default().MapFileIntoMemory(model_uri, 0, num_bytes, mapped_memory));
 
-  std::ifstream bytes_stream(model_uri, std::ifstream::in | std::ifstream::binary);
-  bytes_stream.read(reinterpret_cast<char*>(bytes_data_holder.data()), num_bytes);
-
-  if (!bytes_stream) {
-    return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
-                           "Load model from ", ToUTF8String(model_uri), " failed. Only ",
-                           bytes_stream.gcount(), "/", num_bytes, " bytes were able to be read.");
-  }
-
-  bytes = gsl::span<const uint8_t>(bytes_data_holder.data(), num_bytes);
+  bytes = gsl::span<const uint8_t>(reinterpret_cast<const uint8_t*>(mapped_memory.get()), num_bytes);
 
   return Status::OK();
 }
